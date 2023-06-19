@@ -1,3 +1,5 @@
+import { registerProcessor } from 'web-audio-api';
+
 class AudioWorkletProcessor {
     constructor() {
         this.port.onmessage = this.handleMessage.bind(this);
