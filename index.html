@@ -25,15 +25,18 @@
 <p>Ambient Noise Level: <span id="ambientNoiseLevel">-</span> dB</p>
 <button id="calibrateButton">Calibrate</button>
 
-<footer>
-    <p>Version 0.0.15</p>
-</footer>
+<h2>Status</h2>
+<p id="statusText">Not listening</p>
+<button id="startButton">Start Listening</button>
+
+<footer>Version 0.0.17</footer>
 
 <script>
         // Variables
         let audioThreshold = 60; // Default audio threshold in dB
         let silenceDuration = 5; // Default silence duration in seconds
         let ambientNoiseLevel = 0; // Ambient noise level (calibrated value)
+        let isListening = false; // Listening status
 
         // Function to check for audio silence and show notification
         function checkAudioSilence() {
@@ -56,7 +59,7 @@
                         if (audioLevel <= audioThreshold) {
                             silenceDuration -= 1;
                         } else {
-                            silenceDuration = 5; // Reset silence duration if audio detected
+                            silenceDuration = parseInt(document.getElementById('silenceDuration').value);
                         }
 
                         if (silenceDuration === 0) {
@@ -85,22 +88,18 @@
         // Function to start the audio silence detection
         function startDetection() {
             // Reset silence duration
-            silenceDuration = 5;
+            silenceDuration = parseInt(document.getElementById('silenceDuration').value);
+            isListening = true;
+            document.getElementById('statusText').textContent = 'Listening...';
+
             checkAudioSilence();
         }
 
-        // Function to handle the form submission and update thresholds
+        // Function to handle form submission
         function handleFormSubmit(event) {
             event.preventDefault();
-
-            const audioThresholdInput = document.getElementById('audioThreshold');
-            const silenceDurationInput = document.getElementById('silenceDuration');
-
-            audioThreshold = parseInt(audioThresholdInput.value);
-            silenceDuration = parseInt(silenceDurationInput.value);
-
-            // Reset silence duration
-            silenceDuration = 5;
+            audioThreshold = parseInt(document.getElementById('audioThreshold').value);
+            silenceDuration = parseInt(document.getElementById('silenceDuration').value);
         }
 
         // Function to calibrate the ambient noise level
