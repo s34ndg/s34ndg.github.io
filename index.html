@@ -64,62 +64,35 @@
             clearTimeout(silenceTimer);
         } else {
             // Silence detected
-            if (!notification) {
-                // Show a new notification if no previous notification exists
-                if (Notification.permission === 'granted') {
-                    notification = new Notification('Silence Detected', {
-                        body: 'No audio detected for the specified duration.',
-                    });
-                    notification.onclick = () => {
-                        // Handle notification click event
-                        // You can perform any desired action here
-                        console.log('Notification clicked');
-                    };
-                } else if (Notification.permission !== 'denied') {
-                    Notification.requestPermission().then((permission) => {
-                        if (permission === 'granted') {
-                            notification = new Notification('Silence Detected', {
-                                body: 'No audio detected for the specified duration.',
-                            });
-                            notification.onclick = () => {
-                                // Handle notification click event
-                                // You can perform any desired action here
-                                console.log('Notification clicked');
-                            };
-                        }
-                    });
-                }
+            if (!notification && !silenceTimer) {
+                // Show a new notification if no previous notification exists and the silence timer is not already set
+                silenceTimer = setTimeout(() => {
+                    if (Notification.permission === 'granted') {
+                        notification = new Notification('Silence Detected', {
+                            body: 'No audio detected for the specified duration.',
+                        });
+                        notification.onclick = () => {
+                            // Handle notification click event
+                            // You can perform any desired action here
+                            console.log('Notification clicked');
+                        };
+                    } else if (Notification.permission !== 'denied') {
+                        Notification.requestPermission().then((permission) => {
+                            if (permission === 'granted') {
+                                notification = new Notification('Silence Detected', {
+                                    body: 'No audio detected for the specified duration.',
+                                });
+                                notification.onclick = () => {
+                                    // Handle notification click event
+                                    // You can perform any desired action here
+                                    console.log('Notification clicked');
+                                };
+                            }
+                        });
+                    }
+                    silenceTimer = null;
+                }, silenceDuration * 1000);
             }
-
-            // Start or reset the silence timer
-            clearTimeout(silenceTimer);
-            silenceTimer = setTimeout(() => {
-                // Silence duration reached, show a new notification
-                if (Notification.permission === 'granted') {
-                    notification = new Notification('Silence Detected', {
-                        body: 'No audio detected for the specified duration.',
-                    });
-                    notification.onclick = () => {
-                        // Handle notification click event
-                        // You can perform any desired action here
-                        console.log('Notification clicked');
-                    };
-                } else if (Notification.permission !== 'denied') {
-                    Notification.requestPermission().then((permission) => {
-                        if (permission === 'granted') {
-                            notification = new Notification('Silence Detected', {
-                                body: 'No audio detected for the specified duration.',
-                            });
-                            notification.onclick = () => {
-                                // Handle notification click event
-                                // You can perform any desired action here
-                                console.log('Notification clicked');
-                            };
-                        }
-                    });
-                }
-                silenceTimer = null;
-            }, silenceDuration * 1000);
         }
     }
 
@@ -131,6 +104,7 @@
 
         // Reset silence timer
         clearTimeout(silenceTimer);
+        silenceTimer = null;
 
         // Close notification if it exists
         if (notification) {
@@ -200,7 +174,7 @@
     }
     requestNotificationPermission(); // Request permission on page load
 </script>
-<footer>version 0.0.600</footer>
+<footer>version 0.0.6.1</footer>
 
 </body>
 </html>
