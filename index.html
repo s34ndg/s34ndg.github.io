@@ -76,13 +76,44 @@ function startListening() {
   console.log('Listening for silence...');
 }
 
-// Helper function to detect the audio level
 function detectAudioLevel() {
-  // Placeholder code to detect the audio level
-  // Replace this with your actual implementation to measure and return the audio level
+  // Create an AudioContext
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-  // Example code using a random value between 0 and 100
-  return Math.floor(Math.random() * 100);
+  // Create a MediaStreamSource from the user's microphone
+  navigator.mediaDevices.getUserMedia({ audio: true })
+    .then(function(stream) {
+      const source = audioContext.createMediaStreamSource(stream);
+
+      // Create a ScriptProcessorNode to process the audio data
+      const scriptNode = audioContext.createScriptProcessor(4096, 1, 1);
+      scriptNode.onaudioprocess = function(event) {
+        const inputBuffer = event.inputBuffer;
+        const inputData = inputBuffer.getChannelData(0);
+
+        // Calculate the average absolute audio level
+        let sum = 0;
+        for (let i = 0; i < inputData.length; i++) {
+          sum += Math.abs(inputData[i]);
+        }
+        const average = sum / inputData.length;
+
+        // Call a function or perform any desired action with the audio level
+        handleAudioLevel(average);
+      };
+
+      // Connect the audio source to the script node
+      source.connect(scriptNode);
+      scriptNode.connect(audioContext.destination);
+    })
+    .catch(function(err) {
+      console.error('Error accessing microphone:', err);
+    });
+}
+
+// Function to handle the audio level (replace with your desired action)
+function handleAudioLevel(level) {
+  console.log('Audio Level:', level);
 }
 
 
