@@ -10,6 +10,8 @@
 <h1>Web Audio App</h1>
 <button id="startButton">Start</button>
 <p id="statusText">Not listening</p>
+<label for="silenceDuration">Silence Duration (in seconds):</label>
+<input type="number" id="silenceDuration" min="1" value="5">
 
 <script>
         // Check for browser compatibility
@@ -20,15 +22,18 @@
         // Get references to UI elements
         const startButton = document.getElementById('startButton');
         const statusText = document.getElementById('statusText');
+        const silenceDurationInput = document.getElementById('silenceDuration');
 
         let isListening = false;
         let audioContext = null;
         let audioStream = null;
         let audioSource = null;
         let audioProcessor = null;
-        const audioThreshold = -60; // Adjust this value based on your requirements
+        let audioThreshold = -60; // Adjust this value based on your requirements
+        let silenceDuration = parseInt(silenceDurationInput.value, 10);
 
         startButton.addEventListener('click', toggleListening);
+        silenceDurationInput.addEventListener('input', updateSilenceDuration);
 
         function toggleListening() {
             if (!isListening) {
@@ -94,9 +99,15 @@
             const db = 20 * Math.log10(rms);
 
             if (db < audioThreshold) {
-                // Perform the action when the audio level is below the threshold
-                // For example, show a browser notification
-                showNotification('No audio detected', 'Please check your audio input.');
+                // Perform the action when the audio level is below the threshold for the specified duration
+                silenceDuration--;
+                if (silenceDuration <= 0) {
+                    // For example, show a browser notification
+                    showNotification('No audio detected', 'Please check your microphone or surroundings.');
+                }
+            } else {
+                // Reset the silence duration if audio level is above the threshold
+                silenceDuration = parseInt(silenceDurationInput.value, 10);
             }
         }
 
@@ -104,14 +115,18 @@
             if (Notification.permission === 'granted') {
                 new Notification(title, { body: message });
             } else if (Notification.permission !== 'denied') {
-                Notification.requestPermission().then(permission => {
-                    if (permission === 'granted') {
-                        new Notification(title, { body: message });
-                    }
-                });
+                Notification.requestPermission()
+                    .then(permission => {
+                        if (permission === 'granted') {
+                            new Notification(title, { body: message });
+                        }
+                    });
             }
+        }
+
+        function updateSilenceDuration() {
+            silenceDuration = parseInt(silenceDurationInput.value, 10);
         }
     </script>
 </body>
 </html>
-
