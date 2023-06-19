@@ -53,10 +53,15 @@ function measureAmbientNoiseLevel() {
 }
 
 function startListening() {
-  const threshold = 10; // Set your desired audio level threshold
-  const silenceDuration = 5; // Set the duration of silence (in seconds) before triggering the notification
+  isListening = true;
+  document.getElementById('startButton').style.display = 'none';
+  document.getElementById('stopButton').style.display = 'block';
 
   setInterval(() => {
+    if (!isListening) {
+      return; // Exit the interval if listening is stopped
+    }
+
     const audioLevel = detectAudioLevel();
     console.log('Current audio level:', audioLevel);
 
@@ -76,7 +81,6 @@ function startListening() {
   console.log('Listening for silence...');
 }
 
-
 function detectAudioLevel() {
   // Create an AudioContext
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -89,6 +93,10 @@ function detectAudioLevel() {
       // Create a ScriptProcessorNode to process the audio data
       const scriptNode = audioContext.createScriptProcessor(4096, 1, 1);
       scriptNode.onaudioprocess = function(event) {
+        if (!isListening) {
+          return; // Exit the audio processing if listening is stopped
+        }
+
         const inputBuffer = event.inputBuffer;
         const inputData = inputBuffer.getChannelData(0);
 
@@ -117,31 +125,27 @@ function handleAudioLevel(level) {
   console.log('Audio Level:', level);
 }
 
+function stopListening() {
+  isListening = false;
+  document.getElementById('stopButton').style.display = 'none';
+  document.getElementById('startButton').style.display = 'block';
 
-    // Function to stop listening for silence
-    function stopListening() {
-      isListening = false;
-      document.getElementById('stopButton').style.display = 'none';
-      document.getElementById('startButton').style.display = 'block';
+  // Reset silence timer
+  clearTimeout(silenceTimer);
 
-      // Reset silence timer
-      clearTimeout(silenceTimer);
+  console.log('Listening stopped.');
+}
 
-      console.log('Listening stopped.');
-    }
+function updateThreshold() {
+  threshold = parseInt(document.getElementById('thresholdInput').value);
+  document.getElementById('thresholdValue').textContent = threshold + ' dB';
+  console.log('Threshold updated:', threshold);
+}
 
-    // Function to update the threshold value
-    function updateThreshold() {
-      threshold = parseInt(document.getElementById('thresholdInput').value);
-      document.getElementById('thresholdValue').textContent = threshold + ' dB';
-      console.log('Threshold updated:', threshold);
-    }
-
-    // Function to update the silence duration
-    function updateSilenceDuration() {
-      silenceDuration = parseInt(document.getElementById('silenceDurationInput').value);
-      console.log('Silence duration updated:', silenceDuration);
-    }
+function updateSilenceDuration() {
+  silenceDuration = parseInt(document.getElementById('silenceDurationInput').value);
+  console.log('Silence duration updated:', silenceDuration);
+}
   </script>
 </head>
 <body>
@@ -171,7 +175,7 @@ function handleAudioLevel(level) {
     });
   </script>
 
-<footer>version 0.0.26</footer>
+<footer>version 0.0.27</footer>
 
 </body>
 </html>
