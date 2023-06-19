@@ -186,7 +186,7 @@
 <button id="startButton" onclick="startListening()">Start Listening for Silence</button>
 <button id="stopButton" onclick="stopListening()" style="display: none;">Stop Listening</button>
 
-<p>Current Audio Level: <span id="currentAudioLevel">-</span></p>
+<p>Current Audio Level: <span id="currentAudioLevel">-</span> dB</p>
 
 <div id="audioIndicator">Not Listening</div> <!-- Audio indicator -->
 
@@ -205,7 +205,7 @@
     }
     requestNotificationPermission(); // Request permission on page load
 </script>
-<footer>version 0.1.8</footer>
+<footer>version 0.1.9</footer>
 
 <!-- Create a separate JavaScript file for the audio worklet processor -->
 <script src="audio-worklet.js" type="module"></script>
