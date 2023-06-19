@@ -112,13 +112,11 @@
         function getAudioLevel() {
             const analyser = audioContext.createAnalyser();
             const dataArray = new Uint8Array(analyser.frequencyBinCount);
-            analyser.fftSize = 256;
             analyser.getByteFrequencyData(dataArray);
             const average = getAverage(dataArray);
             const normalizedLevel = average / 255;
             const levelInDB = Math.round(20 * Math.log10(normalizedLevel));
-            handleAudioLevel(normalizedLevel);
-            document.getElementById('currentAudioLevel').textContent = levelInDB + ' dB';
+            handleAudioLevel(levelInDB);
         }
 
         function getAverage(array) {
@@ -207,7 +205,7 @@
     }
     requestNotificationPermission(); // Request permission on page load
 </script>
-<footer>version 0.1.6.1</footer>
+<footer>version 0.1.7</footer>
 
 <!-- Create a separate JavaScript file for the audio worklet processor -->
 <script src="audio-worklet.js" type="module"></script>
