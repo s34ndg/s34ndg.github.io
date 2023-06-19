@@ -22,26 +22,25 @@
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 stream = userStream;
                 const source = audioContext.createMediaStreamSource(stream);
-                const scriptNode = audioContext.createScriptProcessor(4096, 1, 1);
-                scriptNode.onaudioprocess = function(event) {
-                    if (!isListening) {
-                        return; // Exit the audio processing if listening is stopped
-                    }
 
-                    const inputBuffer = event.inputBuffer;
-                    const inputData = inputBuffer.getChannelData(0);
+                // Create an AudioWorkletNode
+                audioContext.audioWorklet.addModule('audio-worklet.js')
+                    .then(() => {
+                        const audioWorkletNode = new AudioWorkletNode(audioContext, 'audio-worklet-processor');
 
-                    let sum = 0;
-                    for (let i = 0; i < inputData.length; i++) {
-                        sum += Math.abs(inputData[i]);
-                    }
-                    const average = sum / inputData.length;
+                        // Set up the audio processing event listener
+                        audioWorkletNode.port.onmessage = function(event) {
+                            const { level } = event.data;
+                            handleAudioLevel(level);
+                        };
 
-                    handleAudioLevel(average);
-                };
-
-                source.connect(scriptNode);
-                scriptNode.connect(audioContext.destination);
+                        // Connect the nodes
+                        source.connect(audioWorkletNode);
+                        audioWorkletNode.connect(audioContext.destination);
+                    })
+                    .catch(function(err) {
+                        console.error('Error adding audio worklet:', err);
+                    });
             })
             .catch(function(err) {
                 console.error('Error accessing microphone:', err);
@@ -174,7 +173,10 @@
     }
     requestNotificationPermission(); // Request permission on page load
 </script>
-<footer>version 0.0.6.1</footer>
+<footer>version 0.1.0</footer>
+
+<!-- Create a separate JavaScript file for the audio worklet processor -->
+<script src="audio-worklet.js"></script>
 
 </body>
 </html>
