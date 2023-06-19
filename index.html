@@ -100,13 +100,6 @@
                     silenceTimer = null;
                 }
             }
-
-            // Continue updating audio level
-            if (isListening) {
-                requestAnimationFrame(() => {
-                    getAudioLevel();
-                });
-            }
         }
 
         function getAudioLevel() {
@@ -117,6 +110,13 @@
             const normalizedLevel = average / 255;
             const levelInDB = Math.round(20 * Math.log10(normalizedLevel));
             handleAudioLevel(levelInDB);
+
+            // Continue updating audio level
+            if (isListening) {
+                requestAnimationFrame(() => {
+                    getAudioLevel();
+                });
+            }
         }
 
         function getAverage(array) {
@@ -204,8 +204,16 @@
         }
     }
     requestNotificationPermission(); // Request permission on page load
+
+    // Start updating audio level
+    function startUpdatingAudioLevel() {
+        if (isListening) {
+            getAudioLevel();
+        }
+    }
+    startUpdatingAudioLevel();
 </script>
-<footer>version 0.1.9</footer>
+<footer>version 0.2.0</footer>
 
 <!-- Create a separate JavaScript file for the audio worklet processor -->
 <script src="audio-worklet.js" type="module"></script>
