@@ -95,28 +95,23 @@
 
             if (db < audioThreshold) {
                 // Perform the action when the audio level is below the threshold
-                // For example, you can trigger vibration or ringtone here
+                // For example, show a browser notification
+                showNotification('No audio detected', 'Please check your audio input.');
+            }
+        }
+
+        function showNotification(title, message) {
+            if (Notification.permission === 'granted') {
+                new Notification(title, { body: message });
+            } else if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        new Notification(title, { body: message });
+                    }
+                });
             }
         }
     </script>
-
-    <script type="module">
-      // Import the functions you need from the SDKs you need
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-      // TODO: Add SDKs for Firebase products that you want to use
-      // https://firebase.google.com/docs/web/setup#available-libraries
-      // Your web app's Firebase configuration
-      const firebaseConfig = {
-        apiKey: "AIzaSyASGfe8Q0voyc51zY19R3pTWbliEfXh8z4",
-        authDomain: "speak2focus.firebaseapp.com",
-        projectId: "speak2focus",
-        storageBucket: "speak2focus.appspot.com",
-        messagingSenderId: "192130724331",
-        appId: "1:192130724331:web:edb861b2ecb116f302e9ae"
-      };
-      // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-    </script>
-
 </body>
 </html>
+
