@@ -99,7 +99,7 @@ function handleAudioLevel(level) {
   console.log('Audio Level:', level);
 
   if (level < threshold) {
-    // Silence detected, show browser notification
+    // Silence detected, show browser notification if no previous notification exists
     if (!notification) {
       notification = new Notification('No Audio Detected', {
         body: 'Please speak louder than the ambient noise level.',
@@ -111,11 +111,28 @@ function handleAudioLevel(level) {
       };
     }
   } else {
-    // Sound detected, clear any existing notification
+    // Sound detected, clear any existing notification and reset the silence timer
     if (notification) {
       notification.close();
       notification = null;
     }
+    clearTimeout(silenceTimer);
+  }
+
+  // Start the silence timer when silence is detected
+  if (level < threshold && !silenceTimer) {
+    silenceTimer = setTimeout(() => {
+      // Silence duration reached, show a new notification
+      notification = new Notification('Silence Detected', {
+        body: 'No audio detected for the specified duration.',
+      });
+      notification.onclick = () => {
+        // Handle notification click event
+        // You can perform any desired action here
+        console.log('Notification clicked');
+      };
+      silenceTimer = null;
+    }, silenceDuration * 1000);
   }
 }
 
@@ -183,7 +200,7 @@ function updateSilenceDuration() {
     });
   </script>
 
-<footer>version 0.0.293</footer>
+<footer>version 0.0.3</footer>
 
 </body>
 </html>
