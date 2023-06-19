@@ -18,179 +18,90 @@
 <button id="calibrationButton">Calibrate</button>
 
 <footer>
-    <p>Version 0.0.12</p>
+    <p>Version 0.0.13</p>
 </footer>
 
 <script>
-        // Check for browser compatibility
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            alert('Web Audio API is not supported in this browser.');
-        }
+        // Variables
+        let audioThreshold = 60; // Default audio threshold in dB
+        let silenceDuration = 5; // Default silence duration in seconds
+        let ambientNoiseLevel = 0; // Ambient noise level (calibrated value)
 
-        // Get references to UI elements
-        const startButton = document.getElementById('startButton');
-        const statusText = document.getElementById('statusText');
-        const silenceDurationInput = document.getElementById('silenceDuration');
-        const ambientNoiseLevelText = document.getElementById('ambientNoiseLevel');
-        const noiseLevelValueText = document.getElementById('noiseLevelValue');
-        const calibrationButton = document.getElementById('calibrationButton');
-        const audioThresholdInput = document.getElementById('audioThresholdInput');
+        // Function to check for audio silence and show notification
+        function checkAudioSilence() {
+            const audioContext = new AudioContext();
+            const analyser = audioContext.createAnalyser();
+            const bufferLength = analyser.fftSize;
 
-        let isListening = false;
-        let audioContext = null;
-        let audioStream = null;
-        let audioSource = null;
-        let audioProcessor = null;
-        let audioThreshold = -60; // Default threshold, can be overridden by user input or ambient noise level
-        let silenceDuration = parseInt(silenceDurationInput.value, 10);
-        let ambientNoiseLevel = 0;
-        let timeoutId = null;
-
-        startButton.addEventListener('click', toggleListening);
-        silenceDurationInput.addEventListener('input', updateSilenceDuration);
-        calibrationButton.addEventListener('click', calibrate);
-        audioThresholdInput.addEventListener('input', updateAudioThreshold);
-
-        function toggleListening() {
-            if (!isListening) {
-                requestAudioPermission();
-            } else {
-                stopListening();
-            }
-        }
-
-        function requestAudioPermission() {
             navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(startListening)
-                .catch(handleAudioPermissionError);
-        }
+                .then(stream => {
+                    const source = audioContext.createMediaStreamSource(stream);
+                    source.connect(analyser);
 
-        function handleAudioPermissionError(error) {
-            console.error('Audio permission denied:', error);
-            statusText.textContent = 'Permission denied. Please allow access to the microphone.';
-        }
+                    setInterval(() => {
+                        const dataArray = new Uint8Array(bufferLength);
+                        analyser.getByteTimeDomainData(dataArray);
 
-        function startListening(stream) {
-            isListening = true;
-            startButton.textContent = 'Stop';
-            statusText.textContent = 'Listening...';
+                        const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
+                        const audioLevel = 20 * Math.log10(average / 128);
 
-            audioContext = new AudioContext();
-            audioStream = stream;
-            audioSource = audioContext.createMediaStreamSource(audioStream);
-            audioProcessor = audioContext.createScriptProcessor(4096, 1, 1);
-
-            audioProcessor.onaudioprocess = processAudio;
-
-            audioSource.connect(audioProcessor);
-            audioProcessor.connect(audioContext.destination);
-        }
-
-        function stopListening() {
-            isListening = false;
-            startButton.textContent = 'Start';
-            statusText.textContent = 'Not listening';
-
-            audioProcessor.onaudioprocess = null;
-
-            audioSource.disconnect();
-            audioProcessor.disconnect();
-
-            audioStream.getTracks().forEach(track => track.stop());
-        }
-
-        function processAudio(event) {
-            const input = event.inputBuffer.getChannelData(0);
-            let sum = 0;
-
-            for (let i = 0; i < input.length; i++) {
-                sum += input[i] * input[i];
-            }
-
-            const rms = Math.sqrt(sum / input.length);
-            const decibel = 20 * Math.log10(rms);
-
-            if (decibel < audioThreshold) {
-                clearTimeout(timeoutId);
-                timeoutId = setTimeout(showNotification, silenceDuration * 1000);
-            }
-        }
-
-        function showNotification() {
-            if (Notification.permission === 'granted') {
-                new Notification('No audio detected', {
-                    body: 'Please check your microphone or surroundings.'
-                });
-            } else if (Notification.permission !== 'denied') {
-                Notification.requestPermission()
-                    .then(permission => {
-                        if (permission === 'granted') {
-                            new Notification('No audio detected', {
-                                body: 'Please check your microphone or surroundings.'
-                            });
+                        if (audioLevel <= audioThreshold) {
+                            silenceDuration -= 1;
+                        } else {
+                            silenceDuration = 5; // Reset silence duration if audio detected
                         }
-                    });
+
+                        if (silenceDuration === 0) {
+                            showNotification('Silence Detected', 'No audio detected for the specified period');
+                        }
+                    }, 1000); // Check audio levels every second
+                })
+                .catch(error => {
+                    console.error('Error accessing microphone:', error);
+                });
+        }
+
+        // Function to show a pop-up notification
+        function showNotification(title, message) {
+            if (Notification.permission === 'granted') {
+                new Notification(title, { body: message });
+            } else if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        new Notification(title, { body: message });
+                    }
+                });
             }
         }
 
-        function updateSilenceDuration() {
-            silenceDuration = parseInt(silenceDurationInput.value, 10);
+        // Function to start the audio silence detection
+        function startDetection() {
+            // Reset silence duration
+            silenceDuration = 5;
+            checkAudioSilence();
         }
 
-        function updateAudioThreshold() {
-            audioThreshold = parseInt(audioThresholdInput.value, 10);
+        // Function to handle the form submission and update thresholds
+        function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const audioThresholdInput = document.getElementById('audioThreshold');
+            const silenceDurationInput = document.getElementById('silenceDuration');
+
+            audioThreshold = parseInt(audioThresholdInput.value);
+            silenceDuration = parseInt(silenceDurationInput.value);
+
+            // Reset silence duration
+            silenceDuration = 5;
         }
 
-        function calibrate() {
-            navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(startCalibration)
-                .catch(handleAudioPermissionError);
-        }
+        // Add event listener to start button
+        const startButton = document.getElementById('startButton');
+        startButton.addEventListener('click', startDetection);
 
-        function startCalibration(stream) {
-            const calibrationContext = new AudioContext();
-            const calibrationSource = calibrationContext.createMediaStreamSource(stream);
-            const calibrationProcessor = calibrationContext.createScriptProcessor(4096, 1, 1);
-            const calibrationBuffer = [];
-
-            calibrationProcessor.onaudioprocess = event => {
-                const input = event.inputBuffer.getChannelData(0);
-
-                for (let i = 0; i < input.length; i++) {
-                    calibrationBuffer.push(input[i]);
-                }
-            };
-
-            calibrationSource.connect(calibrationProcessor);
-            calibrationProcessor.connect(calibrationContext.destination);
-
-            setTimeout(() => {
-                calibrationProcessor.onaudioprocess = null;
-                calibrationSource.disconnect();
-                calibrationProcessor.disconnect();
-                stream.getTracks().forEach(track => track.stop());
-
-                const rms = calculateRMS(calibrationBuffer);
-                const decibel = 20 * Math.log10(rms);
-                ambientNoiseLevel = decibel.toFixed(2);
-                noiseLevelValueText.textContent = ambientNoiseLevel;
-
-                // Update audio threshold based on ambient noise level
-                audioThreshold = ambientNoiseLevel;
-                audioThresholdInput.value = ambientNoiseLevel;
-            }, 5000);
-        }
-
-        function calculateRMS(buffer) {
-            let sum = 0;
-
-            for (let i = 0; i < buffer.length; i++) {
-                sum += buffer[i] * buffer[i];
-            }
-
-            return Math.sqrt(sum / buffer.length);
-        }
+        // Add event listener to form submit
+        const settingsForm = document.getElementById('settingsForm');
+        settingsForm.addEventListener('submit', handleFormSubmit);
     </script>
 </body>
-
 </html>
