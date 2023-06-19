@@ -97,6 +97,7 @@
     // Function to handle the audio level (replace with your desired action)
     function handleAudioLevel(level) {
         console.log('Audio Level:', level);
+        document.getElementById('currentAudioLevel').textContent = level.toFixed(2);
 
         if (silenceTimer) {
             clearTimeout(silenceTimer);
@@ -223,6 +224,8 @@
 <button id="startButton" onclick="startListening()">Start Listening for Silence</button>
 <button id="stopButton" onclick="stopListening()" style="display: none;">Stop Listening</button>
 
+<p>Current Audio Level: <span id="currentAudioLevel">-</span></p>
+
 <div id="audioIndicator">Not Listening</div> <!-- Audio indicator -->
 
 <script>
@@ -240,7 +243,7 @@
     }
     requestNotificationPermission(); // Request permission on page load
 </script>
-<footer>version 0.0.54</footer>
+<footer>version 0.0.56</footer>
 
 </body>
 </html>
