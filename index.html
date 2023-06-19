@@ -4,7 +4,7 @@
     <title>Audio Detection Web App</title>
     <script>
     let ambientNoiseLevel = 0; // Ambient noise level in dB
-    let threshold = 60; // Audio threshold in dB
+    let threshold = 10; // Audio threshold in dB
     let silenceDuration = 5; // Silence duration in seconds
     let isListening = false;
     let silenceTimer = null;
@@ -108,28 +108,58 @@
         } else {
             // Silence detected, show browser notification if no previous notification exists
             if (!notification) {
-                notification = new Notification('No Audio Detected', {
-                    body: 'Please speak louder than the ambient noise level.',
-                });
-                notification.onclick = () => {
-                    // Handle notification click event
-                    // You can perform any desired action here
-                    console.log('Notification clicked');
-                };
-            }
-
-            // Start the silence timer when silence is detected
-            if (!silenceTimer) {
-                silenceTimer = setTimeout(() => {
-                    // Silence duration reached, show a new notification
-                    notification = new Notification('Silence Detected', {
-                        body: 'No audio detected for the specified duration.',
+                if (Notification.permission === 'granted') {
+                    notification = new Notification('No Audio Detected', {
+                        body: 'Please speak louder than the ambient noise level.',
                     });
                     notification.onclick = () => {
                         // Handle notification click event
                         // You can perform any desired action here
                         console.log('Notification clicked');
                     };
+                } else if (Notification.permission !== 'denied') {
+                    Notification.requestPermission().then((permission) => {
+                        if (permission === 'granted') {
+                            notification = new Notification('No Audio Detected', {
+                                body: 'Please speak louder than the ambient noise level.',
+                            });
+                            notification.onclick = () => {
+                                // Handle notification click event
+                                // You can perform any desired action here
+                                console.log('Notification clicked');
+                            };
+                        }
+                    });
+                }
+            }
+
+            // Start the silence timer when silence is detected
+            if (!silenceTimer) {
+                silenceTimer = setTimeout(() => {
+                    // Silence duration reached, show a new notification
+                    if (Notification.permission === 'granted') {
+                        notification = new Notification('Silence Detected', {
+                            body: 'No audio detected for the specified duration.',
+                        });
+                        notification.onclick = () => {
+                            // Handle notification click event
+                            // You can perform any desired action here
+                            console.log('Notification clicked');
+                        };
+                    } else if (Notification.permission !== 'denied') {
+                        Notification.requestPermission().then((permission) => {
+                            if (permission === 'granted') {
+                                notification = new Notification('Silence Detected', {
+                                    body: 'No audio detected for the specified duration.',
+                                });
+                                notification.onclick = () => {
+                                    // Handle notification click event
+                                    // You can perform any desired action here
+                                    console.log('Notification clicked');
+                                };
+                            }
+                        });
+                    }
                     silenceTimer = null;
                 }, silenceDuration * 1000);
             }
@@ -194,13 +224,20 @@
 <div id="audioIndicator">Not Listening</div> <!-- Audio indicator -->
 
 <script>
-    // Request permission for notifications
-    Notification.requestPermission().then((permission) => {
-        console.log('Notification permission:', permission);
-    });
+    // Request permission for notifications upon button click
+    function requestNotificationPermission() {
+        if (Notification.permission === 'granted') {
+            console.log('Notification permission already granted');
+        } else if (Notification.permission !== 'denied') {
+            Notification.requestPermission().then((permission) => {
+                if (permission === 'granted') {
+                    console.log('Notification permission granted');
+                }
+            });
+        }
+    }
 </script>
-
-<footer>version 0.0.45</footer>
+<footer>version 0.0.46</footer>
 
 </body>
 </html>
