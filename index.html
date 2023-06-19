@@ -56,6 +56,7 @@ function startListening() {
   isListening = true;
   document.getElementById('startButton').style.display = 'none';
   document.getElementById('stopButton').style.display = 'block';
+  document.getElementById('audioIndicator').textContent = 'Listening';
 
   setInterval(() => {
     if (!isListening) {
@@ -129,6 +130,7 @@ function stopListening() {
   isListening = false;
   document.getElementById('stopButton').style.display = 'none';
   document.getElementById('startButton').style.display = 'block';
+  document.getElementById('audioIndicator').textContent = 'Not Listening';
 
   // Reset silence timer
   clearTimeout(silenceTimer);
@@ -168,6 +170,8 @@ function updateSilenceDuration() {
 <button id="startButton" onclick="startListening()">Start Listening for Silence</button>
 <button id="stopButton" onclick="stopListening()" style="display: none;">Stop Listening</button>
 
+<div id="audioIndicator">Not Listening</div> <!-- Audio indicator -->
+
 <script>
     // Request permission for notifications
     Notification.requestPermission().then((permission) => {
@@ -175,7 +179,7 @@ function updateSilenceDuration() {
     });
   </script>
 
-<footer>version 0.0.27</footer>
+<footer>version 0.0.28</footer>
 
 </body>
 </html>
