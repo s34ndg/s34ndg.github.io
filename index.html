@@ -60,12 +60,15 @@
                 notification.close();
                 notification = null;
             }
+            // Reset the silence timer
+            clearTimeout(silenceTimer);
         } else {
-            // Silence detected, show browser notification if no previous notification exists
+            // Silence detected
             if (!notification) {
+                // Show a new notification if no previous notification exists
                 if (Notification.permission === 'granted') {
-                    notification = new Notification('No Audio Detected', {
-                        body: 'Please speak louder than the ambient noise level.',
+                    notification = new Notification('Silence Detected', {
+                        body: 'No audio detected for the specified duration.',
                     });
                     notification.onclick = () => {
                         // Handle notification click event
@@ -75,8 +78,8 @@
                 } else if (Notification.permission !== 'denied') {
                     Notification.requestPermission().then((permission) => {
                         if (permission === 'granted') {
-                            notification = new Notification('No Audio Detected', {
-                                body: 'Please speak louder than the ambient noise level.',
+                            notification = new Notification('Silence Detected', {
+                                body: 'No audio detected for the specified duration.',
                             });
                             notification.onclick = () => {
                                 // Handle notification click event
@@ -88,7 +91,7 @@
                 }
             }
 
-            // Start the silence timer when silence is detected or reset the timer if already running
+            // Start or reset the silence timer
             clearTimeout(silenceTimer);
             silenceTimer = setTimeout(() => {
                 // Silence duration reached, show a new notification
@@ -197,7 +200,7 @@
     }
     requestNotificationPermission(); // Request permission on page load
 </script>
-<footer>version 0.0.5990</footer>
+<footer>version 0.0.600</footer>
 
 </body>
 </html>
