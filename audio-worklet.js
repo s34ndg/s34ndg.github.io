@@ -1,25 +1,31 @@
-import { registerProcessor } from 'web-audio-api';
+class AudioWorkletProcessor extends AudioWorkletProcessor {
+  process(inputs, outputs, parameters) {
+    const input = inputs[0];
+    const output = outputs[0];
 
-class AudioWorkletProcessor {
-    constructor() {
-        this.port.onmessage = this.handleMessage.bind(this);
+    // Process each channel of the input audio data
+    for (let channel = 0; channel < input.length; ++channel) {
+      const inputChannel = input[channel];
+      const outputChannel = output[channel];
+
+      // Calculate the average amplitude of the input audio data
+      let sum = 0;
+      for (let i = 0; i < inputChannel.length; ++i) {
+        sum += Math.abs(inputChannel[i]);
+      }
+      const averageAmplitude = sum / inputChannel.length;
+
+      // Copy the input audio data to the output
+      outputChannel.set(inputChannel);
+
+      // Apply some processing to the output audio data based on the average amplitude
+      for (let i = 0; i < outputChannel.length; ++i) {
+        outputChannel[i] *= (averageAmplitude > 0.5) ? 0.5 : 1.0;
+      }
     }
 
-    handleMessage(event) {
-        const input = event.data;
-        const inputData = input[0];
-        const level = this.calculateRMSLevel(inputData);
-        this.port.postMessage({ level });
-    }
-
-    calculateRMSLevel(inputData) {
-        let sum = 0;
-        for (let i = 0; i < inputData.length; i++) {
-            sum += Math.abs(inputData[i]);
-        }
-        const average = sum / inputData.length;
-        return average;
-    }
+    return true;
+  }
 }
 
 registerProcessor('audio-worklet-processor', AudioWorkletProcessor);
