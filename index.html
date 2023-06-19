@@ -52,15 +52,15 @@ function measureAmbientNoiseLevel() {
     });
 }
 
-// Function to start listening for silence
 function startListening() {
-  // Add your custom audio detection logic here
-  // You would typically use the Web Audio API or another audio processing library
+  const threshold = 10; // Set your desired audio level threshold
+  const silenceDuration = 5; // Set the duration of silence (in seconds) before triggering the notification
 
-  // Example placeholder code for detecting silence
   setInterval(() => {
-    // Check if the detected audio level is below the threshold
-    if (detectAudioLevel() < threshold) {
+    const audioLevel = detectAudioLevel();
+    console.log('Current audio level:', audioLevel);
+
+    if (audioLevel < threshold) {
       // Silence detected, show browser notification
       const notification = new Notification('No Audio Detected', {
         body: 'Please speak louder than the ambient noise level.',
@@ -71,10 +71,11 @@ function startListening() {
         console.log('Notification clicked');
       };
     }
-  }, silenceDuration * 1000); // Convert silence duration to milliseconds
+  }, silenceDuration * 1000);
 
   console.log('Listening for silence...');
 }
+
 
 function detectAudioLevel() {
   // Create an AudioContext
