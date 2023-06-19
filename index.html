@@ -95,48 +95,49 @@
     }
 
     // Function to handle the audio level (replace with your desired action)
-// Function to handle the audio level (replace with your desired action)
-function handleAudioLevel(level) {
-    console.log('Audio Level:', level);
+    function handleAudioLevel(level) {
+        console.log('Audio Level:', level);
 
-    if (level < threshold) {
-        // Sound detected, clear any existing notification and reset the silence timer
-        if (notification) {
-            notification.close();
-            notification = null;
+        if (silenceTimer) {
+            clearTimeout(silenceTimer);
+            silenceTimer = null; // Reset the silence timer variable
         }
-        clearTimeout(silenceTimer);
-        silenceTimer = null; // Reset the silence timer variable
-    } else {
-        // Silence detected, show browser notification if no previous notification exists
-        if (!notification) {
-            if (Notification.permission === 'granted') {
-                notification = new Notification('No Audio Detected', {
-                    body: 'Please speak louder than the ambient noise level.',
-                });
-                notification.onclick = () => {
-                    // Handle notification click event
-                    // You can perform any desired action here
-                    console.log('Notification clicked');
-                };
-            } else if (Notification.permission !== 'denied') {
-                Notification.requestPermission().then((permission) => {
-                    if (permission === 'granted') {
-                        notification = new Notification('No Audio Detected', {
-                            body: 'Please speak louder than the ambient noise level.',
-                        });
-                        notification.onclick = () => {
-                            // Handle notification click event
-                            // You can perform any desired action here
-                            console.log('Notification clicked');
-                        };
-                    }
-                });
+
+        if (level >= threshold) {
+            // Sound detected, clear any existing notification
+            if (notification) {
+                notification.close();
+                notification = null;
             }
-        }
+        } else {
+            // Silence detected, show browser notification if no previous notification exists
+            if (!notification) {
+                if (Notification.permission === 'granted') {
+                    notification = new Notification('No Audio Detected', {
+                        body: 'Please speak louder than the ambient noise level.',
+                    });
+                    notification.onclick = () => {
+                        // Handle notification click event
+                        // You can perform any desired action here
+                        console.log('Notification clicked');
+                    };
+                } else if (Notification.permission !== 'denied') {
+                    Notification.requestPermission().then((permission) => {
+                        if (permission === 'granted') {
+                            notification = new Notification('No Audio Detected', {
+                                body: 'Please speak louder than the ambient noise level.',
+                            });
+                            notification.onclick = () => {
+                                // Handle notification click event
+                                // You can perform any desired action here
+                                console.log('Notification clicked');
+                            };
+                        }
+                    });
+                }
+            }
 
-        // Start the silence timer when silence is detected
-        if (!silenceTimer) {
+            // Start the silence timer when silence is detected
             silenceTimer = setTimeout(() => {
                 // Silence duration reached, show a new notification
                 if (Notification.permission === 'granted') {
@@ -166,7 +167,6 @@ function handleAudioLevel(level) {
             }, silenceDuration * 1000);
         }
     }
-}
 
     function stopListening() {
         isListening = false;
@@ -240,7 +240,7 @@ function handleAudioLevel(level) {
     }
     requestNotificationPermission(); // Request permission on page load
 </script>
-<footer>version 0.0.51</footer>
+<footer>version 0.0.54</footer>
 
 </body>
 </html>
