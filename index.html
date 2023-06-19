@@ -90,6 +90,7 @@
                             });
                         }
                         silenceTimer = null;
+                        stopListening(); // Stop listening after silence is detected
                     }, silenceDuration * 1000);
                 } else if (notification && silenceTimer) {
                     // Sound detected before the silence duration has passed, clear the notification and reset the silence timer
@@ -203,7 +204,7 @@
     }
     requestNotificationPermission(); // Request permission on page load
 </script>
-<footer>version 0.1.5</footer>
+<footer>version 0.1.6</footer>
 
 <!-- Create a separate JavaScript file for the audio worklet processor -->
 <script src="audio-worklet.js" type="module"></script>
