@@ -34,7 +34,8 @@
                     analyser.getByteFrequencyData(dataArray);
                     const sum = dataArray.reduce((acc, value) => acc + value, 0);
                     const average = sum / bufferLength;
-                    total += average;
+                    const averageInDB = Math.round(20 * Math.log10(average));
+                    total += averageInDB;
                     count++;
 
                     if (count === 10) { // Adjust the number of iterations as needed
@@ -96,8 +97,9 @@
 
     // Function to handle the audio level (replace with your desired action)
     function handleAudioLevel(level) {
-        console.log('Audio Level:', level);
-        document.getElementById('currentAudioLevel').textContent = level.toFixed(2);
+        const levelInDB = Math.round(20 * Math.log10(level));
+        console.log('Audio Level:', levelInDB + ' dB');
+        document.getElementById('currentAudioLevel').textContent = levelInDB + ' dB';
 
         if (silenceTimer) {
             clearTimeout(silenceTimer);
@@ -211,7 +213,7 @@
 <p>Ambient Noise Level: <span id="ambientNoiseLevel">-</span> dB</p>
 
 <h3>Audio Detection Settings</h3>
-<label for="thresholdInput">Threshold: </label>
+<label for="thresholdInput">Threshold (in dB): </label>
 <input type="number" id="thresholdInput" value="60" step="0.1">
 <button onclick="updateThreshold()">Update Threshold</button>
 <p>Threshold Value: <span id="thresholdValue">60.0 dB</span></p>
@@ -243,7 +245,7 @@
     }
     requestNotificationPermission(); // Request permission on page load
 </script>
-<footer>version 0.0.57</footer>
+<footer>version 0.0.58</footer>
 
 </body>
 </html>
