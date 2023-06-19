@@ -3,7 +3,6 @@
 <head>
     <title>Audio Detection Web App</title>
     <script>
-    let ambientNoiseLevel = 0; // Ambient noise level in dB
     let threshold = 10; // Audio threshold in dB
     let silenceDuration = 5; // Silence duration in seconds
     let isListening = false;
@@ -11,52 +10,6 @@
     let audioContext = null;
     let stream = null;
     let notification = null; // Store the notification object
-
-    // Function to measure ambient noise level
-    function measureAmbientNoiseLevel() {
-        // Use the getUserMedia API to access audio input from the user's device
-        navigator.mediaDevices.getUserMedia({ audio: true })
-            .then((userStream) => {
-                audioContext = new AudioContext();
-                stream = userStream;
-
-                const source = audioContext.createMediaStreamSource(stream);
-                const analyser = audioContext.createAnalyser();
-                source.connect(analyser);
-
-                // Start capturing audio data and calculate the average noise level
-                const bufferLength = analyser.frequencyBinCount;
-                const dataArray = new Uint8Array(bufferLength);
-                let total = 0;
-                let count = 0;
-
-                const calculateAverageNoiseLevel = () => {
-                    analyser.getByteFrequencyData(dataArray);
-                    const sum = dataArray.reduce((acc, value) => acc + value, 0);
-                    const average = sum / bufferLength;
-                    const averageInDB = Math.round(20 * Math.log10(average));
-                    total += averageInDB;
-                    count++;
-
-                    if (count === 10) { // Adjust the number of iterations as needed
-                        // Calculate the average ambient noise level with one decimal place
-                        ambientNoiseLevel = (total / count).toFixed(1);
-                        document.getElementById('ambientNoiseLevel').textContent = ambientNoiseLevel + ' dB';
-                        console.log('Ambient noise level calibrated:', ambientNoiseLevel);
-
-                        // Stop capturing audio and release resources
-                        stream.getTracks().forEach(track => track.stop());
-                    } else {
-                        setTimeout(calculateAverageNoiseLevel, 100); // Adjust the interval as needed
-                    }
-                };
-
-                calculateAverageNoiseLevel();
-            })
-            .catch((error) => {
-                console.error('Failed to access audio input:', error);
-            });
-    }
 
     function startListening() {
         isListening = true;
@@ -208,9 +161,6 @@
 </head>
 <body>
 <h1>Audio Detection Web App</h1>
-<h3>Ambient Noise Calibration</h3>
-<button onclick="measureAmbientNoiseLevel()">Calibrate Ambient Noise</button>
-<p>Ambient Noise Level: <span id="ambientNoiseLevel">-</span> dB</p>
 
 <h3>Audio Detection Settings</h3>
 <label for="thresholdInput">Threshold (in dB): </label>
@@ -245,7 +195,7 @@
     }
     requestNotificationPermission(); // Request permission on page load
 </script>
-<footer>version 0.0.58</footer>
+<footer>version 0.0.590</footer>
 
 </body>
 </html>
