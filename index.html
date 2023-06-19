@@ -10,6 +10,7 @@
     let silenceTimer = null;
     let audioContext = null;
     let stream = null;
+    let notification = null; // Store the notification object
 
    // Function to measure ambient noise level
 function measureAmbientNoiseLevel() {
@@ -99,14 +100,22 @@ function handleAudioLevel(level) {
 
   if (level < threshold) {
     // Silence detected, show browser notification
-    const notification = new Notification('No Audio Detected', {
-      body: 'Please speak louder than the ambient noise level.',
-    });
-    notification.onclick = () => {
-      // Handle notification click event
-      // You can perform any desired action here
-      console.log('Notification clicked');
-    };
+    if (!notification) {
+      notification = new Notification('No Audio Detected', {
+        body: 'Please speak louder than the ambient noise level.',
+      });
+      notification.onclick = () => {
+        // Handle notification click event
+        // You can perform any desired action here
+        console.log('Notification clicked');
+      };
+    }
+  } else {
+    // Sound detected, clear any existing notification
+    if (notification) {
+      notification.close();
+      notification = null;
+    }
   }
 }
 
@@ -174,7 +183,7 @@ function updateSilenceDuration() {
     });
   </script>
 
-<footer>version 0.0.291</footer>
+<footer>version 0.0.293</footer>
 
 </body>
 </html>
