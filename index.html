@@ -8,17 +8,25 @@
 </head>
 <body>
 <h1>Web Audio App</h1>
-<button id="startButton">Start</button>
-<p id="statusText">Not listening</p>
-<label for="silenceDuration">Silence Duration (in seconds):</label>
-<input type="number" id="silenceDuration" min="1" value="5">
-<p id="ambientNoiseLevel">Ambient Noise Level: <span id="noiseLevelValue">-</span> dB</p>
-<label for="audioThresholdInput">Audio Threshold:</label>
-<input type="number" id="audioThresholdInput" min="-100" max="0" step="1">
-<button id="calibrationButton">Calibrate</button>
+
+<!-- Existing code -->
+<h2>Audio Settings</h2>
+<form id="settingsForm">
+    <label for="audioThreshold">Audio Threshold (dB):</label>
+    <input type="number" id="audioThreshold" value="60" required>
+    <br>
+    <label for="silenceDuration">Silence Duration (seconds):</label>
+    <input type="number" id="silenceDuration" value="5" required>
+    <br>
+    <button type="submit">Apply Settings</button>
+</form>
+
+<h2>Calibration</h2>
+<p>Ambient Noise Level: <span id="ambientNoiseLevel">-</span> dB</p>
+<button id="calibrateButton">Calibrate</button>
 
 <footer>
-    <p>Version 0.0.13</p>
+    <p>Version 0.0.15</p>
 </footer>
 
 <script>
@@ -95,6 +103,33 @@
             silenceDuration = 5;
         }
 
+        // Function to calibrate the ambient noise level
+        function calibrateNoiseLevel() {
+            const audioContext = new AudioContext();
+            const analyser = audioContext.createAnalyser();
+            const bufferLength = analyser.fftSize;
+
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    const source = audioContext.createMediaStreamSource(stream);
+                    source.connect(analyser);
+
+                    setInterval(() => {
+                        const dataArray = new Uint8Array(bufferLength);
+                        analyser.getByteTimeDomainData(dataArray);
+
+                        const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
+                        const audioLevel = 20 * Math.log10(average / 128);
+
+                        ambientNoiseLevel = audioLevel;
+                        document.getElementById('ambientNoiseLevel').textContent = audioLevel.toFixed(2) + ' dB';
+                    }, 1000); // Update ambient noise level every second
+                })
+                .catch(error => {
+                    console.error('Error accessing microphone:', error);
+                });
+        }
+
         // Add event listener to start button
         const startButton = document.getElementById('startButton');
         startButton.addEventListener('click', startDetection);
@@ -102,6 +137,10 @@
         // Add event listener to form submit
         const settingsForm = document.getElementById('settingsForm');
         settingsForm.addEventListener('submit', handleFormSubmit);
+
+        // Add event listener to calibrate button
+        const calibrateButton = document.getElementById('calibrateButton');
+        calibrateButton.addEventListener('click', calibrateNoiseLevel);
     </script>
 </body>
 </html>
