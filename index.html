@@ -12,164 +12,164 @@
     let stream = null;
     let notification = null; // Store the notification object
 
-   // Function to measure ambient noise level
-function measureAmbientNoiseLevel() {
-  // Use the getUserMedia API to access audio input from the user's device
-  navigator.mediaDevices.getUserMedia({ audio: true })
-    .then((userStream) => {
-      audioContext = new AudioContext();
-      stream = userStream;
+    // Function to measure ambient noise level
+    function measureAmbientNoiseLevel() {
+        // Use the getUserMedia API to access audio input from the user's device
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then((userStream) => {
+                audioContext = new AudioContext();
+                stream = userStream;
 
-      const source = audioContext.createMediaStreamSource(stream);
-      const analyser = audioContext.createAnalyser();
-      source.connect(analyser);
+                const source = audioContext.createMediaStreamSource(stream);
+                const analyser = audioContext.createAnalyser();
+                source.connect(analyser);
 
-      // Start capturing audio data and calculate the average noise level
-      const bufferLength = analyser.frequencyBinCount;
-      const dataArray = new Uint8Array(bufferLength);
-      let total = 0;
-      let count = 0;
+                // Start capturing audio data and calculate the average noise level
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                let total = 0;
+                let count = 0;
 
-      const calculateAverageNoiseLevel = () => {
-        analyser.getByteFrequencyData(dataArray);
-        const sum = dataArray.reduce((acc, value) => acc + value, 0);
-        const average = sum / bufferLength;
-        total += average;
-        count++;
+                const calculateAverageNoiseLevel = () => {
+                    analyser.getByteFrequencyData(dataArray);
+                    const sum = dataArray.reduce((acc, value) => acc + value, 0);
+                    const average = sum / bufferLength;
+                    total += average;
+                    count++;
 
-        if (count === 10) { // Adjust the number of iterations as needed
-          // Calculate the average ambient noise level
-          ambientNoiseLevel = Math.floor(total / count);
-          document.getElementById('ambientNoiseLevel').textContent = ambientNoiseLevel + ' dB';
-          console.log('Ambient noise level calibrated:', ambientNoiseLevel);
+                    if (count === 10) { // Adjust the number of iterations as needed
+                        // Calculate the average ambient noise level
+                        ambientNoiseLevel = Math.floor(total / count);
+                        document.getElementById('ambientNoiseLevel').textContent = ambientNoiseLevel + ' dB';
+                        console.log('Ambient noise level calibrated:', ambientNoiseLevel);
 
-          // Stop capturing audio and release resources
-          stream.getTracks().forEach(track => track.stop());
+                        // Stop capturing audio and release resources
+                        stream.getTracks().forEach(track => track.stop());
+                    } else {
+                        setTimeout(calculateAverageNoiseLevel, 100); // Adjust the interval as needed
+                    }
+                };
+
+                calculateAverageNoiseLevel();
+            })
+            .catch((error) => {
+                console.error('Failed to access audio input:', error);
+            });
+    }
+
+    function startListening() {
+        isListening = true;
+        document.getElementById('startButton').style.display = 'none';
+        document.getElementById('stopButton').style.display = 'block';
+        document.getElementById('audioIndicator').textContent = 'Listening';
+
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(function(userStream) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                stream = userStream;
+                const source = audioContext.createMediaStreamSource(stream);
+                const scriptNode = audioContext.createScriptProcessor(4096, 1, 1);
+                scriptNode.onaudioprocess = function(event) {
+                    if (!isListening) {
+                        return; // Exit the audio processing if listening is stopped
+                    }
+
+                    const inputBuffer = event.inputBuffer;
+                    const inputData = inputBuffer.getChannelData(0);
+
+                    let sum = 0;
+                    for (let i = 0; i < inputData.length; i++) {
+                        sum += Math.abs(inputData[i]);
+                    }
+                    const average = sum / inputData.length;
+
+                    handleAudioLevel(average);
+                };
+
+                source.connect(scriptNode);
+                scriptNode.connect(audioContext.destination);
+            })
+            .catch(function(err) {
+                console.error('Error accessing microphone:', err);
+            });
+    }
+
+    // Function to handle the audio level (replace with your desired action)
+    function handleAudioLevel(level) {
+        console.log('Audio Level:', level);
+
+        if (level < threshold) {
+            // Sound detected, clear any existing notification and reset the silence timer
+            if (notification) {
+                notification.close();
+                notification = null;
+            }
+            clearTimeout(silenceTimer);
         } else {
-          setTimeout(calculateAverageNoiseLevel, 100); // Adjust the interval as needed
+            // Silence detected, show browser notification if no previous notification exists
+            if (!notification) {
+                notification = new Notification('No Audio Detected', {
+                    body: 'Please speak louder than the ambient noise level.',
+                });
+                notification.onclick = () => {
+                    // Handle notification click event
+                    // You can perform any desired action here
+                    console.log('Notification clicked');
+                };
+            }
+
+            // Start the silence timer when silence is detected
+            if (!silenceTimer) {
+                silenceTimer = setTimeout(() => {
+                    // Silence duration reached, show a new notification
+                    notification = new Notification('Silence Detected', {
+                        body: 'No audio detected for the specified duration.',
+                    });
+                    notification.onclick = () => {
+                        // Handle notification click event
+                        // You can perform any desired action here
+                        console.log('Notification clicked');
+                    };
+                    silenceTimer = null;
+                }, silenceDuration * 1000);
+            }
         }
-      };
-
-      calculateAverageNoiseLevel();
-    })
-    .catch((error) => {
-      console.error('Failed to access audio input:', error);
-    });
-}
-
-function startListening() {
-  isListening = true;
-  document.getElementById('startButton').style.display = 'none';
-  document.getElementById('stopButton').style.display = 'block';
-  document.getElementById('audioIndicator').textContent = 'Listening';
-
-  navigator.mediaDevices.getUserMedia({ audio: true })
-    .then(function(userStream) {
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      stream = userStream;
-      const source = audioContext.createMediaStreamSource(stream);
-      const scriptNode = audioContext.createScriptProcessor(4096, 1, 1);
-      scriptNode.onaudioprocess = function(event) {
-        if (!isListening) {
-          return; // Exit the audio processing if listening is stopped
-        }
-
-        const inputBuffer = event.inputBuffer;
-        const inputData = inputBuffer.getChannelData(0);
-
-        let sum = 0;
-        for (let i = 0; i < inputData.length; i++) {
-          sum += Math.abs(inputData[i]);
-        }
-        const average = sum / inputData.length;
-
-        handleAudioLevel(average);
-      };
-
-      source.connect(scriptNode);
-      scriptNode.connect(audioContext.destination);
-    })
-    .catch(function(err) {
-      console.error('Error accessing microphone:', err);
-    });
-}
-
-// Function to handle the audio level (replace with your desired action)
-function handleAudioLevel(level) {
-  console.log('Audio Level:', level);
-
-  if (level < threshold) {
-    // Silence detected, show browser notification if no previous notification exists
-    if (!notification) {
-      notification = new Notification('No Audio Detected', {
-        body: 'Please speak louder than the ambient noise level.',
-      });
-      notification.onclick = () => {
-        // Handle notification click event
-        // You can perform any desired action here
-        console.log('Notification clicked');
-      };
     }
-  } else {
-    // Sound detected, clear any existing notification and reset the silence timer
-    if (notification) {
-      notification.close();
-      notification = null;
+
+    function stopListening() {
+        isListening = false;
+        document.getElementById('stopButton').style.display = 'none';
+        document.getElementById('startButton').style.display = 'block';
+        document.getElementById('audioIndicator').textContent = 'Not Listening';
+
+        // Reset silence timer
+        clearTimeout(silenceTimer);
+
+        // Release resources
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+
+        if (audioContext) {
+            audioContext.close();
+            audioContext = null;
+        }
+
+        console.log('Listening stopped.');
     }
-    clearTimeout(silenceTimer);
-  }
 
-  // Start the silence timer when silence is detected
-  if (level < threshold && !silenceTimer) {
-    silenceTimer = setTimeout(() => {
-      // Silence duration reached, show a new notification
-      notification = new Notification('Silence Detected', {
-        body: 'No audio detected for the specified duration.',
-      });
-      notification.onclick = () => {
-        // Handle notification click event
-        // You can perform any desired action here
-        console.log('Notification clicked');
-      };
-      silenceTimer = null;
-    }, silenceDuration * 1000);
-  }
-}
+    function updateThreshold() {
+        threshold = parseInt(document.getElementById('thresholdInput').value);
+        document.getElementById('thresholdValue').textContent = threshold + ' dB';
+        console.log('Threshold updated:', threshold);
+    }
 
-function stopListening() {
-  isListening = false;
-  document.getElementById('stopButton').style.display = 'none';
-  document.getElementById('startButton').style.display = 'block';
-  document.getElementById('audioIndicator').textContent = 'Not Listening';
-
-  // Reset silence timer
-  clearTimeout(silenceTimer);
-
-  // Release resources
-  if (stream) {
-    stream.getTracks().forEach(track => track.stop());
-    stream = null;
-  }
-
-  if (audioContext) {
-    audioContext.close();
-    audioContext = null;
-  }
-
-  console.log('Listening stopped.');
-}
-
-function updateThreshold() {
-  threshold = parseInt(document.getElementById('thresholdInput').value);
-  document.getElementById('thresholdValue').textContent = threshold + ' dB';
-  console.log('Threshold updated:', threshold);
-}
-
-function updateSilenceDuration() {
-  silenceDuration = parseInt(document.getElementById('silenceDurationInput').value);
-  console.log('Silence duration updated:', silenceDuration);
-}
-  </script>
+    function updateSilenceDuration() {
+        silenceDuration = parseInt(document.getElementById('silenceDurationInput').value);
+        console.log('Silence duration updated:', silenceDuration);
+    }
+    </script>
 </head>
 <body>
 <h1>Audio Detection Web App</h1>
@@ -196,11 +196,11 @@ function updateSilenceDuration() {
 <script>
     // Request permission for notifications
     Notification.requestPermission().then((permission) => {
-      console.log('Notification permission:', permission);
+        console.log('Notification permission:', permission);
     });
-  </script>
+</script>
 
-<footer>version 0.0.3</footer>
+<footer>version 0.0.45</footer>
 
 </body>
 </html>
