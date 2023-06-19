@@ -17,6 +17,10 @@
 <input type="number" id="audioThresholdInput" min="-100" max="0" step="1">
 <button id="calibrationButton">Calibrate</button>
 
+<footer>
+    <p>Version 0.0.12</p>
+</footer>
+
 <script>
         // Check for browser compatibility
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -91,6 +95,7 @@
 
             audioSource.disconnect();
             audioProcessor.disconnect();
+
             audioStream.getTracks().forEach(track => track.stop());
         }
 
@@ -113,12 +118,16 @@
 
         function showNotification() {
             if (Notification.permission === 'granted') {
-                new Notification('No audio detected', 'Please check your microphone or surroundings.');
+                new Notification('No audio detected', {
+                    body: 'Please check your microphone or surroundings.'
+                });
             } else if (Notification.permission !== 'denied') {
                 Notification.requestPermission()
                     .then(permission => {
                         if (permission === 'granted') {
-                            new Notification('No audio detected', 'Please check your microphone or surroundings.');
+                            new Notification('No audio detected', {
+                                body: 'Please check your microphone or surroundings.'
+                            });
                         }
                     });
             }
@@ -183,4 +192,5 @@
         }
     </script>
 </body>
+
 </html>
