@@ -8,13 +8,17 @@
     let silenceDuration = 5; // Silence duration in seconds
     let isListening = false;
     let silenceTimer = null;
+    let audioContext = null;
+    let stream = null;
 
    // Function to measure ambient noise level
 function measureAmbientNoiseLevel() {
   // Use the getUserMedia API to access audio input from the user's device
   navigator.mediaDevices.getUserMedia({ audio: true })
-    .then((stream) => {
-      const audioContext = new AudioContext();
+    .then((userStream) => {
+      audioContext = new AudioContext();
+      stream = userStream;
+
       const source = audioContext.createMediaStreamSource(stream);
       const analyser = audioContext.createAnalyser();
       source.connect(analyser);
@@ -58,40 +62,11 @@ function startListening() {
   document.getElementById('stopButton').style.display = 'block';
   document.getElementById('audioIndicator').textContent = 'Listening';
 
-  setInterval(() => {
-    if (!isListening) {
-      return; // Exit the interval if listening is stopped
-    }
-
-    const audioLevel = detectAudioLevel();
-    console.log('Current audio level:', audioLevel);
-
-    if (audioLevel < threshold) {
-      // Silence detected, show browser notification
-      const notification = new Notification('No Audio Detected', {
-        body: 'Please speak louder than the ambient noise level.',
-      });
-      notification.onclick = () => {
-        // Handle notification click event
-        // You can perform any desired action here
-        console.log('Notification clicked');
-      };
-    }
-  }, silenceDuration * 1000);
-
-  console.log('Listening for silence...');
-}
-
-function detectAudioLevel() {
-  // Create an AudioContext
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-  // Create a MediaStreamSource from the user's microphone
   navigator.mediaDevices.getUserMedia({ audio: true })
-    .then(function(stream) {
+    .then(function(userStream) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      stream = userStream;
       const source = audioContext.createMediaStreamSource(stream);
-
-      // Create a ScriptProcessorNode to process the audio data
       const scriptNode = audioContext.createScriptProcessor(4096, 1, 1);
       scriptNode.onaudioprocess = function(event) {
         if (!isListening) {
@@ -101,18 +76,15 @@ function detectAudioLevel() {
         const inputBuffer = event.inputBuffer;
         const inputData = inputBuffer.getChannelData(0);
 
-        // Calculate the average absolute audio level
         let sum = 0;
         for (let i = 0; i < inputData.length; i++) {
           sum += Math.abs(inputData[i]);
         }
         const average = sum / inputData.length;
 
-        // Call a function or perform any desired action with the audio level
         handleAudioLevel(average);
       };
 
-      // Connect the audio source to the script node
       source.connect(scriptNode);
       scriptNode.connect(audioContext.destination);
     })
@@ -124,6 +96,18 @@ function detectAudioLevel() {
 // Function to handle the audio level (replace with your desired action)
 function handleAudioLevel(level) {
   console.log('Audio Level:', level);
+
+  if (level < threshold) {
+    // Silence detected, show browser notification
+    const notification = new Notification('No Audio Detected', {
+      body: 'Please speak louder than the ambient noise level.',
+    });
+    notification.onclick = () => {
+      // Handle notification click event
+      // You can perform any desired action here
+      console.log('Notification clicked');
+    };
+  }
 }
 
 function stopListening() {
@@ -134,6 +118,17 @@ function stopListening() {
 
   // Reset silence timer
   clearTimeout(silenceTimer);
+
+  // Release resources
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+    stream = null;
+  }
+
+  if (audioContext) {
+    audioContext.close();
+    audioContext = null;
+  }
 
   console.log('Listening stopped.');
 }
@@ -179,7 +174,7 @@ function updateSilenceDuration() {
     });
   </script>
 
-<footer>version 0.0.28</footer>
+<footer>version 0.0.29</footer>
 
 </body>
 </html>
