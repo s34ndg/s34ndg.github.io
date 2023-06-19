@@ -9,41 +9,82 @@
     let isListening = false;
     let silenceTimer = null;
 
-    // Function to measure ambient noise level
-    function measureAmbientNoiseLevel() {
-      // Placeholder code to measure ambient noise level
-      // Replace this with your actual implementation to measure and update the ambientNoiseLevel variable
-      setTimeout(() => {
-        ambientNoiseLevel = Math.floor(Math.random() * 100);
-        document.getElementById('ambientNoiseLevel').textContent = ambientNoiseLevel + ' dB';
-        console.log('Ambient noise level calibrated:', ambientNoiseLevel);
-      }, 5000); // Calibration time: 5 seconds
+   // Function to measure ambient noise level
+function measureAmbientNoiseLevel() {
+  // Use the getUserMedia API to access audio input from the user's device
+  navigator.mediaDevices.getUserMedia({ audio: true })
+    .then((stream) => {
+      const audioContext = new AudioContext();
+      const source = audioContext.createMediaStreamSource(stream);
+      const analyser = audioContext.createAnalyser();
+      source.connect(analyser);
+
+      // Start capturing audio data and calculate the average noise level
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      let total = 0;
+      let count = 0;
+
+      const calculateAverageNoiseLevel = () => {
+        analyser.getByteFrequencyData(dataArray);
+        const sum = dataArray.reduce((acc, value) => acc + value, 0);
+        const average = sum / bufferLength;
+        total += average;
+        count++;
+
+        if (count === 10) { // Adjust the number of iterations as needed
+          // Calculate the average ambient noise level
+          ambientNoiseLevel = Math.floor(total / count);
+          document.getElementById('ambientNoiseLevel').textContent = ambientNoiseLevel + ' dB';
+          console.log('Ambient noise level calibrated:', ambientNoiseLevel);
+
+          // Stop capturing audio and release resources
+          stream.getTracks().forEach(track => track.stop());
+        } else {
+          setTimeout(calculateAverageNoiseLevel, 100); // Adjust the interval as needed
+        }
+      };
+
+      calculateAverageNoiseLevel();
+    })
+    .catch((error) => {
+      console.error('Failed to access audio input:', error);
+    });
+}
+
+// Function to start listening for silence
+function startListening() {
+  // Add your custom audio detection logic here
+  // You would typically use the Web Audio API or another audio processing library
+
+  // Example placeholder code for detecting silence
+  setInterval(() => {
+    // Check if the detected audio level is below the threshold
+    if (detectAudioLevel() < threshold) {
+      // Silence detected, show browser notification
+      const notification = new Notification('No Audio Detected', {
+        body: 'Please speak louder than the ambient noise level.',
+      });
+      notification.onclick = () => {
+        // Handle notification click event
+        // You can perform any desired action here
+        console.log('Notification clicked');
+      };
     }
+  }, silenceDuration * 1000); // Convert silence duration to milliseconds
 
-    // Function to start listening for silence
-    function startListening() {
-      isListening = true;
-      document.getElementById('startButton').style.display = 'none';
-      document.getElementById('stopButton').style.display = 'block';
+  console.log('Listening for silence...');
+}
 
-      // Reset silence timer
-      clearTimeout(silenceTimer);
+// Helper function to detect the audio level
+function detectAudioLevel() {
+  // Placeholder code to detect the audio level
+  // Replace this with your actual implementation to measure and return the audio level
 
-      // Start silence detection
-      silenceTimer = setTimeout(() => {
-        // Silence detected, show browser notification
-        const notification = new Notification('No Audio Detected', {
-          body: 'Please speak louder than the ambient noise level.',
-        });
-        notification.onclick = () => {
-          // Handle notification click event
-          // You can perform any desired action here
-          console.log('Notification clicked');
-        };
-      }, silenceDuration * 1000); // Convert silence duration to milliseconds
+  // Example code using a random value between 0 and 100
+  return Math.floor(Math.random() * 100);
+}
 
-      console.log('Listening for silence...');
-    }
 
     // Function to stop listening for silence
     function stopListening() {
@@ -98,7 +139,7 @@
     });
   </script>
 
-<footer>version 0.0.20</footer>
+<footer>version 0.0.21</footer>
 
 </body>
 </html>
