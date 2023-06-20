@@ -1,6 +1,6 @@
-import { AudioWork-letProcessor } from 'audio-worklet.js';
+import { AudioWorkletProcessor } from 'audio-worklet.js';
 
-class MyAudioWork-letProcessor extends AudioWork-letProcessor {
+class MyAudioWorkletProcessor extends AudioWorkletProcessor {
   constructor() {
     super();
   }
@@ -34,14 +34,14 @@ class MyAudioWork-letProcessor extends AudioWork-letProcessor {
   }
 }
 
-class SilenceDetector extends AudioWork-letProcessor {
+class SilenceDetector extends AudioWorkletProcessor {
   constructor() {
     super();
     this.threshold = -30; // default threshold value
     this.silenceDuration = 3; // default silence duration in seconds
     this.currentAudioLevel = 0;
     this.silenceTimer = null;
-    this.port.message = this.handleMessage.bind(this);
+    this.port.onmessage = this.handleMessage.bind(this);
   }
 
   handleMessage(event) {
@@ -92,6 +92,5 @@ class SilenceDetector extends AudioWork-letProcessor {
   }
 }
 
-registerProcessor('audio-work let-processor', MyAudioWork-letProcessor);
+registerProcessor('audio-worklet-processor', MyAudioWorkletProcessor);
 registerProcessor('silence-detector', SilenceDetector);
-
