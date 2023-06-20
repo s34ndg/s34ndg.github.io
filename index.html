@@ -143,21 +143,31 @@
         }
 
         function getAudioLevel() {
-            const analyser = audioContext.createAnalyser();
-            const dataArray = new Uint8Array(analyser.frequencyBinCount);
-            analyser.getByteFrequencyData(dataArray);
-            const average = getAverage(dataArray);
-            const normalizedLevel = average / 255;
-            const levelInDB = Math.round(20 * Math.log10(normalizedLevel));
-            handleAudioLevel(levelInDB);
+          const analyser = audioContext.createAnalyser();
+          analyser.fftSize = 2048; // Set the FFT size
+          const bufferLength = analyser.frequencyBinCount;
+          const dataArray = new Uint8Array(bufferLength);
+          analyser.getByteTimeDomainData(dataArray);
 
-            // Continue updating audio level
-            if (isListening) {
-                requestAnimationFrame(() => {
-                    getAudioLevel();
-                });
-            }
-        }
+          // Calculate the average audio level
+          let sum = 0;
+          for (let i = 0; i < bufferLength; i++) {
+            const sample = (dataArray[i] - 128) / 128; // Normalize the sample value
+            sum += sample * sample; // Calculate the squared value
+          }
+          const rms = Math.sqrt(sum / bufferLength);
+          const levelInDB = 20 * Math.log10(rms);
+
+          handleAudioLevel(levelInDB);
+
+  // Continue updating audio level
+  if (isListening) {
+    requestAnimationFrame(() => {
+      getAudioLevel();
+    });
+  }
+}
+
 
         function getAverage(array) {
             let sum = 0;
@@ -254,7 +264,7 @@
     }
     startUpdatingAudioLevel();
 </script>
-<footer>version 0.7.2</footer>
+<footer>version 0.7.3</footer>
 
 <!-- Create a separate JavaScript file for the audio worklet processor -->
 <script src="audio-worklet.js" type="module"></script>
