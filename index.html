@@ -54,7 +54,7 @@
             navigator.mediaDevices.getUserMedia({ audio: true })
                 .then(function (stream) {
                     const audioSource = audioContext.createMediaStreamSource(stream);
-                    const audioWork-letNode = new AudioWork-letNode(audioContext, 'silence-detector');
+                    const audioWorkletNode = new AudioWorkletNode(audioContext, 'silence-detector');
                     audioSource.connect(audioWork-letNode);
                     audioWork-letNode.connect(audioContext.destination);
                 })
@@ -157,6 +157,6 @@
         requestNotificationPermission(); // Request permission on page load
 
     </script>
-<footer>version 0.7.63456</footer>
+<footer>version 0.7.89</footer>
 </body>
 </html>
