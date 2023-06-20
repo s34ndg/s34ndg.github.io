@@ -40,6 +40,9 @@
 
                             // Start the silence timer when listening begins
                             startSilenceTimer();
+
+                            // Start updating audio level
+                            getAudioLevel();
                         })
                         .catch(function (err) {
                             console.error('Error adding audio worklet:', err);
@@ -251,7 +254,7 @@
     }
     startUpdatingAudioLevel();
 </script>
-<footer>version 0.7.1</footer>
+<footer>version 0.7.2</footer>
 
 <!-- Create a separate JavaScript file for the audio worklet processor -->
 <script src="audio-worklet.js" type="module"></script>
