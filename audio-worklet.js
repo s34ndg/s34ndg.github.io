@@ -1,4 +1,4 @@
-import { AudioWork-letProcessor } from 'https://s34ndg.github.io/main/audio-worklet.js';
+import { AudioWork-letProcessor } from 'https://raw.githubusercontent.com/s34ndg/s34ndg.github.io/main/audio-worklet.js';
 
 class MyAudioWork-letProcessor extends AudioWork-letProcessor {
   constructor() {
