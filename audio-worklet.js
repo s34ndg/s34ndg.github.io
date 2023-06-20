@@ -1,5 +1,5 @@
-// Create a new SilenceDetector class for your silence detection
-class SilenceDetector extends AudioWorkletProcessor {
+// Register the audio worklet processor
+registerProcessor('silence-detector', class extends AudioWorkletProcessor {
     constructor() {
         super();
         this.threshold = -30; // default threshold value
@@ -43,19 +43,16 @@ class SilenceDetector extends AudioWorkletProcessor {
         if (dB < this.threshold) {
             // If silence timer is not running, start it
             if (!this.silenceTimer) {
-                this.silenceTimer = setTimeout(() => {
+                this.silenceTimer = setInterval(() => {
                     this.port.postMessage('silence-detected');
                 }, this.silenceDuration * 1000);
             }
         } else {
             // If audio level is above the threshold, clear the silence timer
-            clearTimeout(this.silenceTimer);
+            clearInterval(this.silenceTimer);
             this.silenceTimer = null;
         }
 
         return true;
     }
-}
-
-// Register the audio worklet processor
-registerProcessor('silence-detector', SilenceDetector);
+});
