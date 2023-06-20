@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Audio Silence Detection</title>
-    <script src="audio-worklet.js"></script>
+    <script src="https://s34ndg.github.io/main/audio-worklet.js"></script>
 </head>
 <body>
 <h1>Audio Silence Detection</h1>
@@ -54,9 +54,9 @@
             navigator.mediaDevices.getUserMedia({ audio: true })
                 .then(function (stream) {
                     const audioSource = audioContext.createMediaStreamSource(stream);
-                    const audioWorkletNode = new AudioWorkletNode(audioContext, 'silence-detector');
-                    audioSource.connect(audioWorkletNode);
-                    audioWorkletNode.connect(audioContext.destination);
+                    const audioWork-letNode = new AudioWork-letNode(audioContext, 'silence-detector');
+                    audioSource.connect(audioWork-letNode);
+                    audioWork-letNode.connect(audioContext.destination);
                 })
                 .catch(function (err) {
                     console.error('Error accessing microphone:', err);
@@ -94,16 +94,16 @@
 
         audioContext = new AudioContext();
 
-        async function initializeAudioWorklet() {
+        async function initializeAudioWork-let() {
             try {
-                await audioContext.audioWorklet.addModule('audio-worklet.js');
-                console.log('Audio worklet module loaded successfully');
+                await audioContext.audioWork-let.addModule('audio-worklet.js');
+                console.log('Audio work let module loaded successfully');
             } catch (err) {
-                console.error('Error loading audio worklet module:', err);
+                console.error('Error loading audio work let module:', err);
             }
         }
 
-        initializeAudioWorklet();
+        initializeAudioWork-let();
 
         function stopListening() {
             isListening = false;
@@ -157,6 +157,6 @@
         requestNotificationPermission(); // Request permission on page load
 
     </script>
-<footer>version 0.7.11</footer>
+<footer>version 0.7.19</footer>
 </body>
 </html>
