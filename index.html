@@ -58,7 +58,6 @@
                         .then(function () {
                             const audioSource = audioContext.createMediaStreamSource(stream);
                             const audioWorkletNode = new AudioWorkletNode(audioContext, 'silence-detector');
-                            audioWorkletNode.port.onmessage = handleSilenceDetection;
                             audioSource.connect(audioWorkletNode);
                             audioWorkletNode.connect(audioContext.destination);
                         })
@@ -69,13 +68,6 @@
                 .catch(function (err) {
                     console.error('Error accessing microphone:', err);
                 });
-        }
-
-        function handleSilenceDetection(event) {
-            const { data } = event;
-            if (data === 'silence-detected') {
-                startSilenceTimer();
-            }
         }
 
         function startSilenceTimer() {
@@ -158,6 +150,6 @@
 
         requestNotificationPermission(); // Request permission on page load
     </script>
-    <footer>version 0.199</footer>
+    <footer>version 0.109</footer>
 </body>
 </html>
