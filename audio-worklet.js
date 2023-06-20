@@ -1,5 +1,3 @@
-// audio-worklet.js
-
 class MyAudioWorkletProcessor extends AudioWorkletProcessor {
   constructor() {
     super();
@@ -22,8 +20,12 @@ class MyAudioWorkletProcessor extends AudioWorkletProcessor {
       // Modify the sample value as needed
       // For example, you can apply filters, effects, or manipulate the audio data in some way
 
+      // Apply a simple gain to the input sample
+      const gain = 2; // Adjust the gain value as needed
+      const processedSample = sample * gain;
+
       // Write the processed sample to the output channel
-      outputChannel[i] = sample;
+      outputChannel[i] = processedSample;
     }
 
     return true;
@@ -31,4 +33,5 @@ class MyAudioWorkletProcessor extends AudioWorkletProcessor {
 }
 
 registerProcessor('audio-worklet-processor', MyAudioWorkletProcessor);
+
 
