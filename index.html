@@ -88,22 +88,21 @@
                     });
                 }
                 silenceTimer = null;
-                stopListening(); // Stop listening after silence is detected
             }, silenceDuration * 1000);
         }
 
-        function handleAudioLevel(levelInDB) {
-            document.getElementById('currentAudioLevel').textContent = levelInDB.toFixed(1) + ' dB';
+        audioContext = new AudioContext();
 
-            if (levelInDB <= threshold) {
-                if (!silenceTimer) {
-                    startSilenceTimer();
-                }
-            } else {
-                clearTimeout(silenceTimer);
-                silenceTimer = null;
+        async function initializeAudioWorklet() {
+            try {
+                await audioContext.audioWorklet.addModule('audio-worklet.js');
+                console.log('Audio worklet module loaded successfully');
+            } catch (err) {
+                console.error('Error loading audio worklet module:', err);
             }
         }
+
+        initializeAudioWorklet();
 
         function stopListening() {
             isListening = false;
@@ -157,8 +156,6 @@
         requestNotificationPermission(); // Request permission on page load
 
     </script>
-<footer>version 0.7.8</footer>
-<!-- Create a separate JavaScript file for the audio worklet processor -->
-<script src="audio-worklet.js" type="module"></script>
+<footer>version 0.7.6</footer>
 </body>
 </html>
