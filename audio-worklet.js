@@ -1,9 +1,5 @@
 // Create a new AudioWorkletProcessor class for your custom audio processing
 class MyAudioWorkletProcessor extends AudioWorkletProcessor {
-  constructor() {
-    super();
-  }
-
   process(inputs, outputs, parameters) {
     const input = inputs[0]; // Assuming single input channel
     const output = outputs[0]; // Assuming single output channel
