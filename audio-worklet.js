@@ -1,3 +1,4 @@
+// Create a new AudioWorkletProcessor class for your custom audio processing
 class MyAudioWorkletProcessor extends AudioWorkletProcessor {
   constructor() {
     super();
@@ -32,6 +33,7 @@ class MyAudioWorkletProcessor extends AudioWorkletProcessor {
   }
 }
 
+// Create a new SilenceDetector class for your silence detection
 class SilenceDetector extends AudioWorkletProcessor {
   constructor() {
     super();
@@ -90,5 +92,6 @@ class SilenceDetector extends AudioWorkletProcessor {
   }
 }
 
+// Register the audio worklet processors
 registerProcessor('my-audio-worklet-processor', MyAudioWorkletProcessor);
 registerProcessor('silence-detector', SilenceDetector);
