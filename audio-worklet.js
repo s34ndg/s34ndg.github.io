@@ -1,4 +1,4 @@
-import { AudioWorkletProcessor } from 'https://s34ndg.github.io/audio-worklet.js';
+import { AudioWorkletProcessor } from 'https://s34ndg.github.io/main/audio-worklet.js';
 
 class MyAudioWorkletProcessor extends AudioWorkletProcessor {
   constructor() {
