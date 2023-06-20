@@ -1,5 +1,3 @@
-import { AudioWorkletProcessor } from 'audio-worklet.js';
-
 class MyAudioWorkletProcessor extends AudioWorkletProcessor {
   constructor() {
     super();
