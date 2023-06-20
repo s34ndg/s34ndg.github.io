@@ -52,11 +52,19 @@
                 .then(function (stream) {
                     // Create audio context
                     audioContext = new AudioContext();
-                    const audioSource = audioContext.createMediaStreamSource(stream);
-                    const audioWorkletNode = new AudioWorkletNode(audioContext, 'silence-detector');
-                    audioWorkletNode.port.onmessage = handleSilenceDetection;
-                    audioSource.connect(audioWorkletNode);
-                    audioWorkletNode.connect(audioContext.destination);
+
+                    // Register audio worklet
+                    audioContext.audioWorklet.addModule('audio-worklet.js')
+                        .then(function () {
+                            const audioSource = audioContext.createMediaStreamSource(stream);
+                            const audioWorkletNode = new AudioWorkletNode(audioContext, 'silence-detector');
+                            audioWorkletNode.port.onmessage = handleSilenceDetection;
+                            audioSource.connect(audioWorkletNode);
+                            audioWorkletNode.connect(audioContext.destination);
+                        })
+                        .catch(function (err) {
+                            console.error('Error registering audio worklet:', err);
+                        });
                 })
                 .catch(function (err) {
                     console.error('Error accessing microphone:', err);
@@ -150,6 +158,6 @@
 
         requestNotificationPermission(); // Request permission on page load
     </script>
-    <footer>version 0.93</footer>
+    <footer>version 0.199</footer>
 </body>
 </html>
