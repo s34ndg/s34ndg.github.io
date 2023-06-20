@@ -96,10 +96,10 @@
 
         async function initializeAudioWorklet(){
             try {
-                await audioContext.audioWork-let.addModule('audio-worklet.js');
+                await audioContext.audioWorklet.addModule('audio-worklet.js');
                 console.log('Audio work let module loaded successfully');
             } catch (err) {
-                console.error('Error loading audio work let module:', err);
+                console.error('Error loading audio worklet module:', err);
             }
         }
 
@@ -157,6 +157,6 @@
         requestNotificationPermission(); // Request permission on page load
 
     </script>
-<footer>version 0.7.900</footer>
+<footer>version 0.7.132</footer>
 </body>
 </html>
