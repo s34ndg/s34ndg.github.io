@@ -92,5 +92,5 @@ class SilenceDetector extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor('audio-worklet-processor', MyAudioWorkletProcessor);
+registerProcessor('my-audio-worklet-processor', MyAudioWorkletProcessor);
 registerProcessor('silence-detector', SilenceDetector);
