@@ -1,31 +1,34 @@
-class AudioWorkletProcessor extends AudioWorkletProcessor {
+// audio-worklet.js
+
+class MyAudioWorkletProcessor extends AudioWorkletProcessor {
+  constructor() {
+    super();
+  }
+
   process(inputs, outputs, parameters) {
-    const input = inputs[0];
-    const output = outputs[0];
+    const input = inputs[0]; // Assuming single input channel
+    const output = outputs[0]; // Assuming single output channel
 
-    // Process each channel of the input audio data
-    for (let channel = 0; channel < input.length; ++channel) {
-      const inputChannel = input[channel];
-      const outputChannel = output[channel];
+    const inputChannel = input[0];
+    const outputChannel = output[0];
 
-      // Calculate the average amplitude of the input audio data
-      let sum = 0;
-      for (let i = 0; i < inputChannel.length; ++i) {
-        sum += Math.abs(inputChannel[i]);
-      }
-      const averageAmplitude = sum / inputChannel.length;
+    const bufferSize = inputChannel.length;
 
-      // Copy the input audio data to the output
-      outputChannel.set(inputChannel);
+    // Process each sample in the input channel
+    for (let i = 0; i < bufferSize; i++) {
+      const sample = inputChannel[i];
 
-      // Apply some processing to the output audio data based on the average amplitude
-      for (let i = 0; i < outputChannel.length; ++i) {
-        outputChannel[i] *= (averageAmplitude > 0.5) ? 0.5 : 1.0;
-      }
+      // Apply your audio processing algorithm here
+      // Modify the sample value as needed
+      // For example, you can apply filters, effects, or manipulate the audio data in some way
+
+      // Write the processed sample to the output channel
+      outputChannel[i] = sample;
     }
 
     return true;
   }
 }
 
-registerProcessor('audio-worklet-processor', AudioWorkletProcessor);
+registerProcessor('audio-worklet-processor', MyAudioWorkletProcessor);
+
