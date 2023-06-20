@@ -1,3 +1,5 @@
+import { AudioWorkletProcessor } from 'https://s34ndg.github.io/audio-worklet.js';
+
 class MyAudioWorkletProcessor extends AudioWorkletProcessor {
   constructor() {
     super();
